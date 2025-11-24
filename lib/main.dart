@@ -1,8 +1,11 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-void main() {
-  runApp(const KodimVmesteApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  runApp(const ProviderScope(child: KodimVmesteApp()));
 }
 
 class KodimVmesteApp extends StatelessWidget {
@@ -22,16 +25,16 @@ class KodimVmesteApp extends StatelessWidget {
   }
 }
 
-class IdeasScreen extends StatelessWidget {
+class IdeasScreen extends ConsumerWidget {
   const IdeasScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(title: const Text('Кодим вместе')),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: 10,
+        itemCount: 5,
         itemBuilder: (context, index) {
           return Card(
             margin: const EdgeInsets.only(bottom: 16),
@@ -40,39 +43,40 @@ class IdeasScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  // Заголовок идеи
+                  Text(
                     'Трекер привычек с напоминаниями',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Хочу простое приложение без рекламы. Главное — пуш в 21:00, если не отметил выполнение',
+
+                  // Короткое описание
+                  Text(
+                    'Хочу простое приложение, чтобы ставить цели на день и получать пуш в 21:00, если не отметил выполнение',
+                    style: Theme.of(context).textTheme.bodyMedium,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 12),
 
-                  // Теги
+                  // Теги + город + награда (в одной строке)
                   Wrap(
                     spacing: 8,
+                    runSpacing: 4,
                     children: [
-                      Chip(label: const Text('flutter'), backgroundColor: Colors.deepPurple.shade50),
-                      Chip(label: const Text('напоминания'), backgroundColor: Colors.deepPurple.shade50),
-                      Chip(label: const Text('продуктивность'), backgroundColor: Colors.deepPurple.shade50),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Город + награда
-                  Wrap(
-                    spacing: 8,
-                    children: [
-                      Chip(label: const Text('Москва'), backgroundColor: Colors.grey.shade200),
+                      Chip(
+                          label: Text('Flutter'),
+                          backgroundColor: Colors.deepPurple.shade50),
+                      Chip(
+                          label: Text('Москва'),
+                          backgroundColor: Colors.grey.shade200),
                       Chip(
                         label: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: const [
-                            Icon(Icons.local_pizza, size: 18),
+                            Icon(Icons.local_pizza, size: 16),
                             SizedBox(width: 4),
                             Text('Пицца'),
                           ],
@@ -81,52 +85,27 @@ class IdeasScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
-                  // Нижняя строка
+                  // Статус внизу + голоса
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Wrap(
-                        spacing: 8,
-                        children: [
-                          Chip(
-                            label: const Text('Ищу разработчика'),
-                            backgroundColor: Colors.orange.shade100,
-                          ),
-                          Chip(
-                            label: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Icon(Icons.star, size: 16, color: Colors.green),
-                                SizedBox(width: 4),
-                                Text('Для новичка'),
-                              ],
-                            ),
-                            backgroundColor: Colors.green.shade100,
-                          ),
-                          Chip(
-                            label: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Icon(Icons.favorite, size: 16, color: Colors.pink),
-                                SizedBox(width: 4),
-                                Text('Готов учить'),
-                              ],
-                            ),
-                            backgroundColor: Colors.pink.shade100,
-                          ),
-                        ],
+                      Chip(
+                        label: Text(
+                          'Ищу разработчика',
+                          style: TextStyle(color: Colors.orange.shade700),
+                        ),
+                        backgroundColor: Colors.orange.shade100,
                       ),
-
                       Row(
                         children: const [
-                          Icon(Icons.arrow_upward, color: Colors.green, size: 24),
-                          SizedBox(width: 4),
-                          Text('24', style: TextStyle(fontWeight: FontWeight.bold)),
-                          SizedBox(width: 12),
-                          Icon(Icons.arrow_downward, color: Colors.red, size: 24),
-                          SizedBox(width: 4),
+                          Icon(Icons.arrow_upward,
+                              color: Colors.green, size: 20),
+                          Text('24'),
+                          SizedBox(width: 8),
+                          Icon(Icons.arrow_downward,
+                              color: Colors.red, size: 20),
                           Text('2'),
                         ],
                       ),
@@ -139,11 +118,7 @@ class IdeasScreen extends StatelessWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Плюсик работает!')),
-          );
-        },
+        onPressed: () {},
         child: const Icon(Icons.add),
       ),
     );
