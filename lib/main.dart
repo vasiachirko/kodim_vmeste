@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:kodim_vmeste/features/ideas/domain/idea.dart'; // ← добавь импорт!
 import 'package:kodim_vmeste/features/ideas/presentation/add_idea_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart'; // ← ЭТА СТРОЧКА
-import 'package:kodim_vmeste/features/ideas/domain/idea_try_new.dart';
+import 'package:kodim_vmeste/features/ideas/domain/idea.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  Hive.registerAdapter(IdeaTryNewAdapter()); // наш новый адаптер
-  await Hive.openBox<IdeaTryNew>('ideas_try_new'); // новый бокс
+  Hive.registerAdapter(IdeaAdapter()); // наш новый адаптер
+  await Hive.openBox<Idea>('ideas'); // новый бокс
   runApp(const MyApp());
 }
 
@@ -40,11 +39,6 @@ class IdeasScreen extends StatelessWidget {
         'Хочу простое приложение без рекламы. Главное — пуш в 21:00, если не отметил выполнение',
     createdAt: DateTime(2025, 4, 5),
     tags: ['flutter', 'напоминания', 'продуктивность'],
-    difficulty: Difficulty.junior,
-    preferredExperience: PreferredExperience.beginnerFriendly,
-    city: 'Москва',
-    reward: 'Пицца',
-    authorName: 'Вася',
     upvotes: 24,
     downvotes: 2,
   );
@@ -56,8 +50,8 @@ class IdeasScreen extends StatelessWidget {
         title: const Text('Кодим вместе'),
         backgroundColor: Colors.deepPurple.shade50,
       ),
-      body: ValueListenableBuilder<Box<IdeaTryNew>>(
-        valueListenable: Hive.box<IdeaTryNew>('ideas_try_new').listenable(),
+      body: ValueListenableBuilder<Box<Idea>>(
+        valueListenable: Hive.box<Idea>('ideas').listenable(),
         builder: (context, box, _) {
           final ideas = box.values.toList()
             ..sort(
@@ -101,11 +95,11 @@ class IdeasScreen extends StatelessWidget {
 // Обновлённая карточка — теперь принимает Idea
 
 class IdeaCard extends StatelessWidget {
-  final IdeaTryNew? idea;
+  final Idea? idea;
   const IdeaCard({super.key, this.idea});
 
   // Заглушка — одна на всех
-  static final IdeaTryNew _fallbackIdeaTryNew = IdeaTryNew(
+  static final Idea _fallbackIdea = Idea(
     id: 'fallback',
     title: 'Заглушка',
     description: 'Скоро здесь будут новые идеи',
@@ -117,7 +111,7 @@ class IdeaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final i = idea ?? _fallbackIdeaTryNew; // ← вот эта строка!
+    final i = idea ?? _fallbackIdea; 
 
     return Card(
       child: Padding(

@@ -1,65 +1,25 @@
-// lib/features/ideas/domain/idea.dart
+// lib/features/ideas/domain/idea_try_new.dart
+import 'package:hive/hive.dart';
 
-enum Difficulty { junior, middle, senior }
-enum PreferredExperience { any, beginnerFriendly, wantsExperienced }
+part 'idea.g.dart';
 
-class Idea {
-  final String id;
-  final String title;
-  final String description;
-  final DateTime createdAt;
-  final List<String> tags;
-  final Difficulty difficulty;
-  final PreferredExperience preferredExperience;
-  final String? city;
-  final String? reward;
-  final String? authorName;
-  final int upvotes;
-  final int downvotes;
+@HiveType(typeId: 0)  // 0 занят Idea, берём 1
+class Idea extends HiveObject {
+  @HiveField(0) final String id;
+  @HiveField(1) final String title;
+  @HiveField(2) final String description;
+  @HiveField(3) final DateTime createdAt;
+  @HiveField(4) final List<String> tags;
+  @HiveField(5) final int upvotes;
+  @HiveField(6) final int downvotes;
 
   Idea({
     required this.id,
     required this.title,
     required this.description,
     required this.createdAt,
-    required this.tags,
-    required this.difficulty,
-    required this.preferredExperience,
-    this.city,
-    this.reward,
-    this.authorName,
+    this.tags = const [],
     this.upvotes = 0,
     this.downvotes = 0,
   });
-
-  // Удобный copyWith — будем использовать для голосования
-  Idea copyWith({
-    String? id,
-    String? title,
-    String? description,
-    DateTime? createdAt,
-    List<String>? tags,
-    Difficulty? difficulty,
-    PreferredExperience? preferredExperience,
-    String? city,
-    String? reward,
-    String? authorName,
-    int? upvotes,
-    int? downvotes,
-  }) {
-    return Idea(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      description: description ?? this.description,
-      createdAt: createdAt ?? this.createdAt,
-      tags: tags ?? this.tags,
-      difficulty: difficulty ?? this.difficulty,
-      preferredExperience: preferredExperience ?? this.preferredExperience,
-      city: city ?? this.city,
-      reward: reward ?? this.reward,
-      authorName: authorName ?? this.authorName,
-      upvotes: upvotes ?? this.upvotes,
-      downvotes: downvotes ?? this.downvotes,
-    );
-  }
 }

@@ -1,22 +1,22 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'idea_try_new.dart';
+part of 'idea.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class IdeaTryNewAdapter extends TypeAdapter<IdeaTryNew> {
+class IdeaAdapter extends TypeAdapter<Idea> {
   @override
-  final int typeId = 1;
+  final int typeId = 0;
 
   @override
-  IdeaTryNew read(BinaryReader reader) {
+  Idea read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return IdeaTryNew(
+    return Idea(
       id: fields[0] as String,
       title: fields[1] as String,
       description: fields[2] as String,
@@ -28,7 +28,7 @@ class IdeaTryNewAdapter extends TypeAdapter<IdeaTryNew> {
   }
 
   @override
-  void write(BinaryWriter writer, IdeaTryNew obj) {
+  void write(BinaryWriter writer, Idea obj) {
     writer
       ..writeByte(7)
       ..writeByte(0)
@@ -53,7 +53,7 @@ class IdeaTryNewAdapter extends TypeAdapter<IdeaTryNew> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is IdeaTryNewAdapter &&
+      other is IdeaAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

@@ -1,6 +1,6 @@
 // lib/features/ideas/presentation/add_idea_screen.dart
 import 'package:flutter/material.dart';
-import 'package:kodim_vmeste/features/ideas/domain/idea_try_new.dart';
+import 'package:kodim_vmeste/features/ideas/domain/idea.dart';
 import 'package:uuid/uuid.dart';
 import 'package:hive/hive.dart';
 
@@ -27,7 +27,7 @@ class _AddIdeaScreenState extends State<AddIdeaScreen> {
       return;
     }
 
-    final idea = IdeaTryNew(
+    final idea = Idea(
       id: const Uuid().v4(),
       title: title,
       description: desc,
@@ -39,7 +39,7 @@ class _AddIdeaScreenState extends State<AddIdeaScreen> {
           .toList(),
     );
 
-    final box = Hive.box<IdeaTryNew>('ideas_try_new');
+    final box = Hive.box<Idea>('ideas');
     await box.put(idea.id, idea);
 
     if (!mounted) return;
