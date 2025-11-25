@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:kodim_vmeste/features/ideas/domain/idea.dart'; // ← добавь импорт!
+import 'package:kodim_vmeste/features/ideas/presentation/add_idea_screen.dart';
+import 'package:hive_flutter/hive_flutter.dart'; // ← ЭТА СТРОЧКА
+import 'package:kodim_vmeste/features/ideas/domain/idea_try_new.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  Hive.registerAdapter(IdeaTryNewAdapter()); // наш новый адаптер
+  await Hive.openBox<IdeaTryNew>('ideas_try_new'); // новый бокс
   runApp(const MyApp());
 }
 
@@ -49,25 +56,40 @@ class IdeasScreen extends StatelessWidget {
         title: const Text('Кодим вместе'),
         backgroundColor: Colors.deepPurple.shade50,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          IdeaCard(idea: IdeasScreen.testIdea), // берём из static const
-          const SizedBox(height: 16),
-          const IdeaCard(),
-          const SizedBox(height: 16),
-          const IdeaCard(),
-          const SizedBox(height: 16),
-          const IdeaCard(),
-          const SizedBox(height: 16),
-          const IdeaCard(),
-          const SizedBox(height: 80), // отступ под FAB
-        ],
+      body: ValueListenableBuilder<Box<IdeaTryNew>>(
+        valueListenable: Hive.box<IdeaTryNew>('ideas_try_new').listenable(),
+        builder: (context, box, _) {
+          final ideas = box.values.toList()
+            ..sort(
+                (a, b) => b.createdAt.compareTo(a.createdAt)); // новые сверху
+
+          if (ideas.isEmpty) {
+            return const Center(
+              child: Text(
+                'Пока нет идей\nНажми + чтобы добавить',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            );
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: ideas.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              return IdeaCard(idea: ideas[index]);
+            },
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Скоро будет форма добавления!')),
+          // Просто открываем форму и ждём, когда пользователь вернётся
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const AddIdeaScreen(),
+            ),
           );
         },
         child: const Icon(Icons.add),
@@ -77,23 +99,25 @@ class IdeasScreen extends StatelessWidget {
 }
 
 // Обновлённая карточка — теперь принимает Idea
+
 class IdeaCard extends StatelessWidget {
-  final Idea? idea;
+  final IdeaTryNew? idea;
   const IdeaCard({super.key, this.idea});
 
-  static final Idea _fallback = Idea(
-    id: '',
+  // Заглушка — одна на всех
+  static final IdeaTryNew _fallbackIdeaTryNew = IdeaTryNew(
+    id: 'fallback',
     title: 'Заглушка',
     description: 'Скоро здесь будут новые идеи',
     createdAt: DateTime(2025),
     tags: ['ожидание'],
-    difficulty: Difficulty.junior,
-    preferredExperience: PreferredExperience.any,
+    upvotes: 0,
+    downvotes: 0,
   );
 
   @override
   Widget build(BuildContext context) {
-    final i = idea ?? _fallback;
+    final i = idea ?? _fallbackIdeaTryNew; // ← вот эта строка!
 
     return Card(
       child: Padding(
@@ -101,42 +125,22 @@ class IdeaCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Заголовок
-            Text(
-              i.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
+            Text(i.title,
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 8),
-
-            // Описание
-            Text(
-              i.description,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 15),
-            ),
+            Text(i.description, maxLines: 3, overflow: TextOverflow.ellipsis),
             const SizedBox(height: 12),
-
-            // Теги
             Wrap(
               spacing: 8,
-              runSpacing: 4,
               children: i.tags
                   .map((tag) => Chip(
                         label: Text(tag),
                         backgroundColor: Colors.deepPurple.shade50,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        labelPadding: EdgeInsets.zero,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ))
                   .toList(),
             ),
             const SizedBox(height: 16),
-
-            // Только голоса — в правом нижнем углу
             Align(
               alignment: Alignment.centerRight,
               child: Row(
@@ -144,10 +148,8 @@ class IdeaCard extends StatelessWidget {
                 children: [
                   const Icon(Icons.arrow_upward, color: Colors.green, size: 20),
                   const SizedBox(width: 4),
-                  Text(
-                    '${i.upvotes}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
+                  Text('${i.upvotes}',
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(width: 12),
                   const Icon(Icons.arrow_downward, color: Colors.red, size: 20),
                   const SizedBox(width: 4),
