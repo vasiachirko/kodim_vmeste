@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:kodim_vmeste/features/ideas/domain/idea.dart';
 import 'package:uuid/uuid.dart';
 import 'package:hive/hive.dart';
+import 'package:kodim_vmeste/main.dart';
 
 class AddIdeaScreen extends StatefulWidget {
   const AddIdeaScreen({super.key});
@@ -37,6 +38,7 @@ class _AddIdeaScreenState extends State<AddIdeaScreen> {
           .map((e) => e.trim())
           .where((e) => e.isNotEmpty)
           .toList(),
+      authorId: CurrentUser.id,
     );
 
     final box = Hive.box<Idea>('ideas');
